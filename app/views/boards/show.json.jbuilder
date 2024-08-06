@@ -1,1 +1,1 @@
-json.partial! "boards/board", board: @board
+json.partial! 'boards/board', board: @board
