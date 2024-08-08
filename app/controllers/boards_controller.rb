@@ -30,7 +30,7 @@ class BoardsController < ApplicationController
 
     # bucket = 'bucket' # the bucket name without s3://
     # photo  = 'input.jpg' # the name of file
-    img = '/Users/mitsuiakane/Projects/my_reiru/helloworld/app/assets/images/aab.jpg'
+    img = "./app/assets/images/aab.jpg"
     client = Aws::Rekognition::Client.new(region: ENV['AWS_REGION'], credentials:)
     # client = Aws::Rekognition::Client.new(credentials: credentials)
     attrs = {
@@ -39,7 +39,11 @@ class BoardsController < ApplicationController
       }
 
     }
-    response = client.detect_faces(attrs)
+    image = MiniMagick::Image.open(img) 
+    image_width = image.width
+    image_height = image.height
+    
+    response = client.detect_faces attrs
     puts 'Detected faces for: '
     response.face_details.each do |face_detail|
       puts 'All other attributes:'
@@ -47,12 +51,9 @@ class BoardsController < ApplicationController
       puts "  bounding_box.height:    #{face_detail.bounding_box.height}"
       puts "  bounding_box.left:      #{face_detail.bounding_box.left}"
       puts "  bounding_box.top:       #{face_detail.bounding_box.top}"
-    end
+    
     # コピペここまで
     #     original = MiniMagick::Image.read(File.read(img))
-    image = MiniMagick::Image.open(img) 
-    image_width = image.width
-    image_height = image.height
     image.combine_options do |edit|
       #b.resize "250x200>"
       #b.rotate "-90"
@@ -64,10 +65,10 @@ class BoardsController < ApplicationController
       # uly = image.rows * response.face_details.first.bounding_box.top
       # w = image.columns * response.face_details.first.bounding_box.width
       # h = image.rows * response.face_details.first.bounding_box.height
-      rect_x_ratio = response.face_details.first.bounding_box.left
-      rect_y_ratio = response.face_details.first.bounding_box.top
-      rect_width_ratio = response.face_details.first.bounding_box.width
-      rect_height_ratio = response.face_details.first.bounding_box.height
+      rect_x_ratio = face_detail.bounding_box.left
+      rect_y_ratio = face_detail.bounding_box.top
+      rect_width_ratio = face_detail.bounding_box.width
+      rect_height_ratio = face_detail.bounding_box.height
   
       edit.fill('#ffffff')
       rect_x = image_width * rect_x_ratio
@@ -77,6 +78,7 @@ class BoardsController < ApplicationController
    
       edit.draw("rectangle #{rect_x},#{rect_y},#{rect_width},#{rect_height}")
     end
+  end
     image.write("/Users/mitsuiakane/Projects/my_reiru/helloworld/app/assets/images/result.jpg")
     if @board.save
       redirect_to @board, notice: 'Board was successfully created.'
