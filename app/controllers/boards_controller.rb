@@ -49,6 +49,26 @@ class BoardsController < ApplicationController
       puts "  bounding_box.top:       #{face_detail.bounding_box.top}"
     end
     # コピペここまで
+    #     original = MiniMagick::Image.read(File.read(img))
+
+    gc = MiniMagick::Draw.new
+
+    gc.fill_opacity(0)
+    gc.fill('transparent')
+    gc.stroke('red')
+    gc.stroke_width(3)
+
+    # Draw rectangle
+    ulx = original.columns * response.face_details.first.bounding_box.left
+    uly = original.rows * response.face_details.first.bounding_box.top
+    w = original.columns * response.face_details.first.bounding_box.width
+    h = original.rows * response.face_details.first.bounding_box.height
+
+    gc.rectangle(ulx, uly, ulx + w, uly + h)
+    gc.draw(original)
+
+    # new_image = original.blur_image(0.0, 10.0)
+    original.write("/Users/mitsuiakane/Projects/peace/app/assets/images/result.jpg")
 
     if @board.save
       redirect_to @board, notice: 'Board was successfully created.'
