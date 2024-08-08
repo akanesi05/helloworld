@@ -43,6 +43,7 @@ gem 'aws-sdk-rekognition', require: false
 gem 'bootsnap', require: false
 gem 'carrierwave'
 gem 'dotenv-rails'
+gem "mini_magick"
 gem 'rubocop', require: false
 gem 'rubocop-rails', require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
