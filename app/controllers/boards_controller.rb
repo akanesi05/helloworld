@@ -19,7 +19,13 @@ class BoardsController < ApplicationController
 
   # POST /boards or /boards.json
   def create
+   
     @board = Board.new(board_params)
+    unless @board.save
+      render :new
+      
+    end
+    image_path = @board.image.current_path
 
     # 公式ドキュメントコピペここからhttps://docs.aws.amazon.com/ja_jp/rekognition/latest/dg/faces-detect-images.html
     require 'aws-sdk-rekognition'
@@ -30,16 +36,16 @@ class BoardsController < ApplicationController
 
     # bucket = 'bucket' # the bucket name without s3://
     # photo  = 'input.jpg' # the name of file
-    img = "./app/assets/images/aab.jpg"
-    client = Aws::Rekognition::Client.new(region: ENV['AWS_REGION'], credentials:)
-    # client = Aws::Rekognition::Client.new(credentials: credentials)
+  
+    #client = Aws::Rekognition::Client.new(region: ENV['AWS_REGION'], credentials:)
+    client   = Aws::Rekognition::Client.new(region: ENV['AWS_REGION'],credentials: credentials)
     attrs = {
       image: {
-        bytes: File.read(img)
+        bytes: File.read(image_path)
       }
 
     }
-    image = MiniMagick::Image.open(img) 
+    image = MiniMagick::Image.open(image_path)
     image_width = image.width
     image_height = image.height
     
@@ -55,16 +61,6 @@ class BoardsController < ApplicationController
     # コピペここまで
     #     original = MiniMagick::Image.read(File.read(img))
     image.combine_options do |edit|
-      #b.resize "250x200>"
-      #b.rotate "-90"
-      #edit.fill_opacity(0)
-      # edit.stroke('red')
-      # edit.stroke_width(3)
-      # Draw rectangle
-      # ulx = image.columns * response.face_details.first.bounding_box.left
-      # uly = image.rows * response.face_details.first.bounding_box.top
-      # w = image.columns * response.face_details.first.bounding_box.width
-      # h = image.rows * response.face_details.first.bounding_box.height
       rect_x_ratio = face_detail.bounding_box.left
       rect_y_ratio = face_detail.bounding_box.top
       rect_width_ratio = face_detail.bounding_box.width
@@ -79,7 +75,13 @@ class BoardsController < ApplicationController
       edit.draw("rectangle #{rect_x},#{rect_y},#{rect_width},#{rect_height}")
     end
   end
-    image.write("/Users/mitsuiakane/Projects/my_reiru/helloworld/app/assets/images/result.jpg")
+
+    image.write("./app/assets/images/result.jpg")
+    File.open('./app/assets/images/result.jpg') do |file|
+      @board.image = file
+    end
+
+    
     if @board.save
       redirect_to @board, notice: 'Board was successfully created.'
     else
