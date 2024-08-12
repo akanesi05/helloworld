@@ -19,23 +19,17 @@ class BoardsController < ApplicationController
 
   # POST /boards or /boards.json
   def create
-    # p "------------------------------------------"
-    # p image_path.inspect
-    # p "------------------------------------------"
+   
     
     @board = Board.new(board_params)
     
     unless @board.save
-      p @board.errors.full_messages
-      p "------------------------------------------"
-      p @board.errors.full_messages
-     # p @board.inspect
-      p "------------------------------------------"
+    
       render :new
       
       
     end
-    image_path = @board.image.current_path
+    image_path = @board.board_image.current_path
     
   
     # 公式ドキュメントコピペここからhttps://docs.aws.amazon.com/ja_jp/rekognition/latest/dg/faces-detect-images.html
@@ -90,7 +84,7 @@ class BoardsController < ApplicationController
       random = rand(1..999999)
       image.write("./app/assets/images/result#{random}.jpg")
       File.open("./app/assets/images/result#{random}.jpg") do |file|
-      @board.image = file
+      @board.board_image = file
     end
     
     #画像を削除する
